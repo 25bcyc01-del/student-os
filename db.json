@@ -1,0 +1,10 @@
+{
+  "expenses": [],
+  "studies": [],
+  "tasks": [
+    {
+      "text": "study ds",
+      "date": "25/2/2026"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student OS - Life Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>📚 Student OS</h1>
+<p>Manage your studies and money smartly</p>
+
+<div class="dashboard">
+
+  <!-- LEFT COLUMN -->
+  <div class="column">
+
+    <div class="box">
+      <h2>📘 Study Manager</h2>
+      <form action="/addStudy" method="POST">
+        <input type="text" name="task" placeholder="Enter Task" required>
+        <input type="number" name="hours" placeholder="Hours" required>
+        <button type="submit">Add Study</button>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2>⏱ Focus Timer</h2>
+      <p id="timer">25:00</p>
+      <button onclick="startTimer()">Start</button>
+      <button onclick="resetTimer()">Reset</button>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="column">
+
+    <div class="box">
+      <h2>💰 Expense Manager</h2>
+      <form action="/addExpense" method="POST">
+        <input type="text" name="title" placeholder="Expense Name" required>
+        <input type="number" name="amount" placeholder="Amount (₹)" required>
+        <button type="submit">Add Expense</button>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2>📅 Daily Planner</h2>
+      <form action="/addTask" method="POST">
+        <input type="text" name="task" placeholder="Enter Today's Task" required>
+        <button type="submit">Add Task</button>
+      </form>
+      <a href="/tasks" class="view-btn">📋 View Tasks</a>
+    </div>
+
+    <a href="/view" class="view-btn">📊 View Records</a>
+
+  </div>
+
+</div>
+
+<script>
+let time = 25 * 60;
+let interval;
+
+function startTimer() {
+  if (interval) return;
+
+  interval = setInterval(() => {
+    let minutes = Math.floor(time / 60);
+    let seconds = time % 60;
+
+    document.getElementById("timer").innerText =
+      minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+    time--;
+
+    if (time < 0) {
+      clearInterval(interval);
+      alert("Focus Session Complete! 🎉");
+    }
+  }, 1000);
+}
+
+function resetTimer() {
+  clearInterval(interval);
+  interval = null;
+  time = 25 * 60;
+  document.getElementById("timer").innerText = "25:00";
+}
+</script>
+
+</body>
+</html>
