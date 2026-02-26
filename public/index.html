@@ -12,53 +12,48 @@
 
 <div class="dashboard">
 
-  <!-- LEFT COLUMN -->
-  <div class="column">
-
-    <div class="box">
-      <h2>📘 Study Manager</h2>
-      <form action="/addStudy" method="POST">
-        <input type="text" name="task" placeholder="Enter Task" required>
-        <input type="number" name="hours" placeholder="Hours" required>
-        <button type="submit">Add Study</button>
-      </form>
-    </div>
-
-    <div class="box">
-      <h2>⏱ Focus Timer</h2>
-      <p id="timer">25:00</p>
-      <button onclick="startTimer()">Start</button>
-      <button onclick="resetTimer()">Reset</button>
-    </div>
-
+  <!-- Daily Planner -->
+  <div class="box">
+    <h2>📅 Daily Planner</h2>
+    <form action="/addTask" method="POST">
+      <input type="text" name="task" placeholder="Enter Today's Task" required>
+      <button type="submit">Add Task</button>
+    </form>
+    <a href="/tasks" class="view-btn">📋 View Tasks</a>
   </div>
 
-  <!-- RIGHT COLUMN -->
-  <div class="column">
+  <!-- Productivity -->
+  <div class="box">
+    <h2>📘 Productivity / Studies</h2>
+    <form action="/addStudy" method="POST">
+      <input type="text" name="task" placeholder="Enter Study Task" required>
+      <input type="number" name="hours" placeholder="Hours" required>
+      <button type="submit">Add Study</button>
+    </form>
+    <a href="/studies" class="view-btn">📊 View Productivity</a>
+  </div>
 
-    <div class="box">
-      <h2>💰 Expense Manager</h2>
-      <form action="/addExpense" method="POST">
-        <input type="text" name="title" placeholder="Expense Name" required>
-        <input type="number" name="amount" placeholder="Amount (₹)" required>
-        <button type="submit">Add Expense</button>
-      </form>
-    </div>
+  <!-- Expense Manager -->
+  <div class="box">
+    <h2>💰 Expense Manager</h2>
+    <form action="/addExpense" method="POST">
+      <input type="text" name="title" placeholder="Expense Name" required>
+      <input type="number" name="amount" placeholder="Amount (₹)" required>
+      <button type="submit">Add Expense</button>
+    </form>
+    <a href="/expenses" class="view-btn">📈 View Expense Records</a>
+  </div>
 
-    <div class="box">
-      <h2>📅 Daily Planner</h2>
-      <form action="/addTask" method="POST">
-        <input type="text" name="task" placeholder="Enter Today's Task" required>
-        <button type="submit">Add Task</button>
-      </form>
-      <a href="/tasks" class="view-btn">📋 View Tasks</a>
-    </div>
-
-    <a href="/view" class="view-btn">📊 View Records</a>
-
+  <!-- Focus Timer -->
+  <div class="box">
+    <h2>⏱ Focus Timer</h2>
+    <p id="timer">25:00</p>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="resetTimer()">Reset</button>
   </div>
 
 </div>
+
 
 <script>
 let time = 25 * 60;

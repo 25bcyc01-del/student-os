@@ -1,6 +1,16 @@
 {
-  "expenses": [],
-  "studies": [],
+  "expenses": [
+    {
+      "title": "Food",
+      "amount": "200"
+    }
+  ],
+  "studies": [
+    {
+      "task": "study python",
+      "hours": "2"
+    }
+  ],
   "tasks": [
     {
       "text": "study ds",
