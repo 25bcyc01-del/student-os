@@ -28,6 +28,8 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
+// ================= EXPENSE =================
+
 // Add Expense
 app.post("/addExpense", async (req, res) => {
   await db.read();
@@ -39,18 +41,92 @@ app.post("/addExpense", async (req, res) => {
   res.redirect("/");
 });
 
+// View Expenses
+app.get("/expenses", async (req, res) => {
+  await db.read();
+
+  const expenses = db.data.expenses || [];
+  const total = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+
+  res.send(`
+    <h2>💰 Expense Tracker</h2>
+    <h3>Total Spending: ₹${total}</h3>
+
+    ${
+      expenses.map(e => `<p>₹${e.amount} - ${e.title}</p>`).join("") || "<p>No expenses</p>"
+    }
+
+    <br><a href="/">⬅ Back</a>
+  `);
+});
+
+// ================= STUDIES =================
+
 // Add Study
 app.post("/addStudy", async (req, res) => {
   await db.read();
+
   db.data.studies.push({
     task: req.body.task,
     hours: req.body.hours,
+    completed: false
   });
+
   await db.write();
-  res.redirect("/");
+  res.redirect("/studies");
 });
 
-// Add Planner Task (UPDATED)
+// Complete Study
+app.post("/completeStudy", async (req, res) => {
+  await db.read();
+
+  const index = req.body.index;
+
+  if (db.data.studies[index]) {
+    db.data.studies[index].completed = true;
+  }
+
+  await db.write();
+  res.redirect("/studies");
+});
+
+// View Studies
+app.get("/studies", async (req, res) => {
+  await db.read();
+
+  const studies = db.data.studies || [];
+
+  const pending = studies.filter(s => !s.completed);
+  const completed = studies.filter(s => s.completed);
+
+  res.send(`
+    <h2>📘 Productivity Tracker</h2>
+
+    <h3>🟡 Pending</h3>
+    ${
+      pending.map((s, i) => `
+        <form method="POST" action="/completeStudy">
+          <input type="hidden" name="index" value="${i}">
+          <button>✔</button>
+          ${s.task} - ${s.hours} hrs
+        </form>
+      `).join("") || "<p>No pending</p>"
+    }
+
+    <h3>🟢 Completed</h3>
+    ${
+      completed.map(s => `
+        <p style="text-decoration:line-through;">✔ ${s.task} - ${s.hours} hrs</p>
+      `).join("") || "<p>No completed</p>"
+    }
+
+    <br><a href="/">⬅ Back</a>
+  `);
+});
+
+// ================= TASKS =================
+
+// Add Task
 app.post("/addTask", async (req, res) => {
   await db.read();
 
@@ -64,7 +140,7 @@ app.post("/addTask", async (req, res) => {
   res.redirect("/tasks");
 });
 
-// Mark Task as Completed
+// Complete Task
 app.post("/completeTask", async (req, res) => {
   await db.read();
 
@@ -78,31 +154,7 @@ app.post("/completeTask", async (req, res) => {
   res.redirect("/tasks");
 });
 
-// View Expense Records
-app.get("/expenses", async (req, res) => {
-  await db.read();
-  const expenses = db.data.expenses || [];
-
-  res.send(`
-    <h2>💰 Expense Records</h2>
-    ${expenses.map(e => `<p>₹${e.amount} - ${e.title}</p>`).join("")}
-    <br><a href="/">Back</a>
-  `);
-});
-
-// View Productivity Records
-app.get("/studies", async (req, res) => {
-  await db.read();
-  const studies = db.data.studies || [];
-
-  res.send(`
-    <h2>📘 Productivity Records</h2>
-    ${studies.map(s => `<p>${s.task} - ${s.hours} hrs</p>`).join("")}
-    <br><a href="/">Back</a>
-  `);
-});
-
-// NEW IMPROVED TASK VIEW
+// View Tasks
 app.get("/tasks", async (req, res) => {
   await db.read();
 
@@ -174,6 +226,8 @@ app.get("/tasks", async (req, res) => {
     </html>
   `);
 });
+
+// ================= START SERVER =================
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
