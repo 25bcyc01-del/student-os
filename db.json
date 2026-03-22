@@ -14,7 +14,8 @@
   "tasks": [
     {
       "text": "study ds",
-      "date": "25/2/2026"
+      "date": "25/2/2026",
+      "completed": true
     }
   ]
 }
