@@ -1,10 +1,74 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Student OS - Life Manager</title>
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: linear-gradient(to right, #c2b6ff, #8ec5fc);
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(2, 280px);
+      gap: 30px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    input {
+      margin: 6px;
+      padding: 10px;
+      width: 85%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 8px;
+      padding: 10px;
+      width: 85%;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6a8df0, #8e5cf0);
+      color: white;
+      cursor: pointer;
+    }
+
+    .view-btn {
+      display: block;
+      margin-top: 10px;
+      text-decoration: none;
+      background: #2ecc71;
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+    }
+
+    #timerPreview {
+      font-size: 28px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+  </style>
+
 </head>
+
 <body>
 
 <h1>📚 Student OS</h1>
@@ -13,6 +77,7 @@
 <div class="dashboard">
 
   <!-- Daily Planner -->
+
   <div class="box">
     <h2>📅 Daily Planner</h2>
     <form action="/addTask" method="POST">
@@ -23,8 +88,9 @@
   </div>
 
   <!-- Productivity -->
+
   <div class="box">
-    <h2>📘 Productivity / Studies</h2>
+    <h2>📘 Productivity</h2>
     <form action="/addStudy" method="POST">
       <input type="text" name="task" placeholder="Enter Study Task" required>
       <input type="number" name="hours" placeholder="Hours" required>
@@ -34,6 +100,7 @@
   </div>
 
   <!-- Expense Manager -->
+
   <div class="box">
     <h2>💰 Expense Manager</h2>
     <form action="/addExpense" method="POST">
@@ -44,47 +111,20 @@
     <a href="/expenses" class="view-btn">📈 View Expense Records</a>
   </div>
 
-  <!-- Focus Timer -->
+  <!-- Clean Timer (Preview Only) -->
+
   <div class="box">
     <h2>⏱ Focus Timer</h2>
-    <p id="timer">25:00</p>
-    <button onclick="startTimer()">Start</button>
-    <button onclick="resetTimer()">Reset</button>
+
+```
+<p id="timerPreview">25:00</p>
+
+<a href="/timer" class="view-btn">🚀 Open Full Timer</a>
+```
+
   </div>
 
 </div>
-
-
-<script>
-let time = 25 * 60;
-let interval;
-
-function startTimer() {
-  if (interval) return;
-
-  interval = setInterval(() => {
-    let minutes = Math.floor(time / 60);
-    let seconds = time % 60;
-
-    document.getElementById("timer").innerText =
-      minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-
-    time--;
-
-    if (time < 0) {
-      clearInterval(interval);
-      alert("Focus Session Complete! 🎉");
-    }
-  }, 1000);
-}
-
-function resetTimer() {
-  clearInterval(interval);
-  interval = null;
-  time = 25 * 60;
-  document.getElementById("timer").innerText = "25:00";
-}
-</script>
 
 </body>
 </html>

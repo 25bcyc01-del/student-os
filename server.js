@@ -6,6 +6,7 @@ const { JSONFile } = require("lowdb/node");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Database
 const adapter = new JSONFile("db.json");
 const db = new Low(adapter, { expenses: [], studies: [], tasks: [] });
 
@@ -19,139 +20,12 @@ initDB();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// ================= HOME =================
+// HOME
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-// ================= EXPENSE =================
-app.post("/addExpense", async (req, res) => {
-  await db.read();
-
-  db.data.expenses.push({
-    title: req.body.title,
-    amount: Number(req.body.amount),
-    date: new Date().toLocaleDateString()
-  });
-
-  await db.write();
-  res.redirect("/expenses");
-});
-
-app.get("/expenses", async (req, res) => {
-  await db.read();
-
-  const expenses = db.data.expenses || [];
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-
-  res.send(`
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial; background: #f5f5f5; padding: 20px; }
-        .box { background: white; padding: 20px; margin: 15px auto; width: 60%; border-radius: 10px; }
-      </style>
-    </head>
-    <body>
-
-      <h2>💰 Expense Tracker</h2>
-
-      <div class="box">
-        <h3>Total Spending: ₹${total}</h3>
-      </div>
-
-      <div class="box">
-        <h3>📊 All Expenses</h3>
-        ${
-          expenses.map(e => `<p>₹${e.amount} - ${e.title} (${e.date})</p>`).join("") || "<p>No expenses</p>"
-        }
-      </div>
-
-      <center><a href="/">⬅ Back</a></center>
-
-    </body>
-    </html>
-  `);
-});
-
-// ================= STUDIES =================
-app.post("/addStudy", async (req, res) => {
-  await db.read();
-
-  db.data.studies.push({
-    task: req.body.task,
-    hours: req.body.hours,
-    date: new Date().toLocaleDateString(),
-    completed: false
-  });
-
-  await db.write();
-  res.redirect("/studies");
-});
-
-app.post("/completeStudy", async (req, res) => {
-  await db.read();
-
-  const index = req.body.index;
-  if (db.data.studies[index]) {
-    db.data.studies[index].completed = true;
-  }
-
-  await db.write();
-  res.redirect("/studies");
-});
-
-app.get("/studies", async (req, res) => {
-  await db.read();
-
-  const studies = db.data.studies || [];
-
-  const pending = studies.filter(s => !s.completed);
-  const completed = studies.filter(s => s.completed);
-
-  res.send(`
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial; background: #f5f5f5; padding: 20px; }
-        .box { background: white; padding: 20px; margin: 15px auto; width: 60%; border-radius: 10px; }
-        .completed { text-decoration: line-through; color: gray; }
-      </style>
-    </head>
-    <body>
-
-      <h2>📘 Productivity Tracker</h2>
-
-      <div class="box">
-        <h3>🟡 Pending</h3>
-        ${
-          pending.map((s, i) => `
-            <form method="POST" action="/completeStudy">
-              <input type="hidden" name="index" value="${i}">
-              <button>✔</button>
-              ${s.task} - ${s.hours} hrs (${s.date})
-            </form>
-          `).join("") || "<p>No pending</p>"
-        }
-      </div>
-
-      <div class="box">
-        <h3>🟢 Completed</h3>
-        ${
-          completed.map(s => `
-            <p class="completed">✔ ${s.task} - ${s.hours} hrs (${s.date})</p>
-          `).join("") || "<p>No completed</p>"
-        }
-      </div>
-
-      <center><a href="/">⬅ Back</a></center>
-
-    </body>
-    </html>
-  `);
-});
-
-// ================= TASKS =================
+// ================= TASK =================
 app.post("/addTask", async (req, res) => {
   await db.read();
 
@@ -181,116 +55,276 @@ app.get("/tasks", async (req, res) => {
   await db.read();
 
   const tasks = db.data.tasks || [];
-
   const pending = tasks.filter(t => !t.completed);
   const completed = tasks.filter(t => t.completed);
 
   res.send(`
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial; background: #f5f5f5; padding: 20px; }
-        .box { background: white; padding: 20px; margin: 15px auto; width: 60%; border-radius: 10px; }
-        .completed { text-decoration: line-through; color: gray; }
-      </style>
-    </head>
+  <html>
+  <body style="font-family:Arial;text-align:center;background:#f5f5f5">
+    <h2>📅 Daily Planner</h2>
 
-    <body>
+    <h3>Pending</h3>
+    ${
+      pending.map((t,i)=>`
+      <form method="POST" action="/completeTask">
+        <input type="hidden" name="index" value="${i}">
+        <button>✔</button>
+        ${t.text}
+      </form>
+      `).join("") || "<p>No tasks</p>"
+    }
 
-      <h2>📅 Daily Planner - ${new Date().toLocaleDateString()}</h2>
+    <h3>Completed</h3>
+    ${
+      completed.map(t=>`
+      <p style="text-decoration:line-through;">✔ ${t.text}</p>
+      `).join("") || "<p>None</p>"
+    }
 
-      <div class="box">
-        <h3>🟡 Pending Tasks</h3>
-        ${
-          pending.map((t, i) => `
-            <form method="POST" action="/completeTask">
-              <input type="hidden" name="index" value="${i}">
-              <button>✔</button>
-              ${t.text}
-            </form>
-          `).join("") || "<p>No pending</p>"
-        }
-      </div>
+    <a href="/">⬅ Back</a>
+  </body>
+  </html>
+  `);
+});
 
-      <div class="box">
-        <h3>🟢 Completed Tasks</h3>
-        ${
-          completed.map(t => `
-            <p class="completed">✔ ${t.text}</p>
-          `).join("") || "<p>No completed</p>"
-        }
-      </div>
+// ================= STUDY =================
+app.post("/addStudy", async (req, res) => {
+  await db.read();
 
-      <center><a href="/">⬅ Back</a></center>
+  db.data.studies.push({
+    task: req.body.task,
+    hours: Number(req.body.hours), // 🔥 FIX
+    completed: false
+  });
 
-    </body>
-    </html>
+  await db.write();
+  res.redirect("/studies");
+});
+
+app.post("/completeStudy", async (req, res) => {
+  await db.read();
+
+  const index = req.body.index;
+  if (db.data.studies[index]) {
+    db.data.studies[index].completed = true;
+  }
+
+  await db.write();
+  res.redirect("/studies");
+});
+
+app.get("/studies", async (req, res) => {
+  await db.read();
+
+  const studies = db.data.studies || [];
+  const pending = studies.filter(s => !s.completed);
+  const completed = studies.filter(s => s.completed);
+
+  res.send(`
+  <html>
+  <body style="font-family:Arial;text-align:center;background:#f5f5f5">
+
+    <h2>📘 Productivity</h2>
+
+    <h3>Pending</h3>
+    ${
+      pending.map((s,i)=>`
+      <form method="POST" action="/completeStudy">
+        <input type="hidden" name="index" value="${i}">
+        <button>✔</button>
+        ${s.task} - ${s.hours} hrs
+      </form>
+      `).join("") || "<p>None</p>"
+    }
+
+    <h3>Completed</h3>
+    ${
+      completed.map(s=>`
+      <p style="text-decoration:line-through;">✔ ${s.task}</p>
+      `).join("") || "<p>None</p>"
+    }
+
+    <a href="/">⬅ Back</a>
+  </body>
+  </html>
+  `);
+});
+
+// ================= EXPENSE =================
+
+// ADD EXPENSE (FIXED)
+app.post("/addExpense", async (req, res) => {
+  await db.read();
+
+  db.data.expenses.push({
+    title: req.body.title,
+    amount: Number(req.body.amount), // 🔥 VERY IMPORTANT FIX
+    date: new Date().toLocaleDateString()
+  });
+
+  await db.write();
+  res.redirect("/expenses");
+});
+
+// VIEW EXPENSES (FIXED TOTAL)
+app.get("/expenses", async (req, res) => {
+  await db.read();
+
+  const expenses = db.data.expenses || [];
+
+  const total = expenses.reduce((sum, e) => {
+    return sum + Number(e.amount || 0); // 🔥 FORCE NUMBER
+  }, 0);
+
+  res.send(`
+  <html>
+  <body style="font-family:Arial;text-align:center;background:#f5f5f5">
+
+    <h2>💰 Expense Tracker</h2>
+    <h3>Total Spending: ₹${total}</h3>
+
+    <h3>📊 All Expenses</h3>
+
+    ${
+      expenses.map(e=>`
+      <p>₹${e.amount} - ${e.title} (${e.date})</p>
+      `).join("") || "<p>No expenses</p>"
+    }
+
+    <a href="/">⬅ Back</a>
+  </body>
+  </html>
   `);
 });
 
 // ================= TIMER =================
 app.get("/timer", (req, res) => {
   res.send(`
-    <html>
-    <head>
-      <style>
-        body { text-align: center; font-family: Arial; padding: 40px; }
-      </style>
-    </head>
-    <body>
+  <html>
+  <head>
+    <style>
+      body {
+        font-family: Arial;
+        text-align: center;
+        background: linear-gradient(to right,#c2b6ff,#8ec5fc);
+      }
 
-      <h2>⏳ Study Timer</h2>
+      .card {
+        background: white;
+        padding: 30px;
+        width: 320px;
+        margin: 80px auto;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      }
+
+      input, select {
+        margin: 8px;
+        padding: 10px;
+        width: 85%;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+
+      .timer {
+        font-size: 45px;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg,#6a8df0,#8e5cf0);
+        color: white;
+        cursor: pointer;
+      }
+
+      a {
+        display: block;
+        margin-top: 15px;
+        text-decoration: none;
+        color: #333;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="card">
+      <h2>⏱ Focus Timer</h2>
+
+      <input type="text" id="task" placeholder="What are you studying?">
 
       <select id="mode">
-        <option value="25">25 min (Pomodoro)</option>
+        <option value="25">25 min</option>
         <option value="50">50 min</option>
         <option value="custom">Custom</option>
       </select>
 
-      <input id="customTime" type="number" placeholder="Enter minutes" />
+      <input id="custom" type="number" placeholder="Enter minutes" style="display:none;">
 
-      <h1 id="time">00:00</h1>
+      <div id="timer" class="timer">25:00</div>
 
-      <button onclick="startTimer()">Start</button>
+      <div>
+        <button onclick="start()">Start</button>
+        <button onclick="pause()">Pause</button>
+        <button onclick="reset()">Reset</button>
+      </div>
 
-      <script>
-        let interval;
+      <a href="/">⬅ Back</a>
+    </div>
 
-        function startTimer() {
-          clearInterval(interval);
+    <script>
+      let time = 25 * 60;
+      let interval;
 
-          let mode = document.getElementById("mode").value;
-          let minutes = mode === "custom"
-            ? document.getElementById("customTime").value
-            : mode;
+      const mode = document.getElementById("mode");
+      const custom = document.getElementById("custom");
 
-          let time = minutes * 60;
+      mode.onchange = () => {
+        custom.style.display = mode.value === "custom" ? "block" : "none";
+      };
 
-          interval = setInterval(() => {
-            let m = Math.floor(time / 60);
-            let s = time % 60;
+      function start() {
+        clearInterval(interval);
 
-            document.getElementById("time").innerText =
-              m + ":" + (s < 10 ? "0" + s : s);
+        let minutes = mode.value === "custom"
+          ? custom.value || 25
+          : mode.value;
 
-            time--;
+        time = minutes * 60;
 
-            if (time < 0) {
-              clearInterval(interval);
-              alert("Time's up!");
-            }
-          }, 1000);
-        }
-      </script>
+        interval = setInterval(() => {
+          let m = Math.floor(time / 60);
+          let s = time % 60;
 
-      <br><br><a href="/">⬅ Back</a>
+          document.getElementById("timer").innerText =
+            m + ":" + (s < 10 ? "0" + s : s);
 
-    </body>
-    </html>
+          time--;
+
+          if (time < 0) {
+            clearInterval(interval);
+            alert("Done 🎉");
+          }
+        }, 1000);
+      }
+
+      function pause() {
+        clearInterval(interval);
+      }
+
+      function reset() {
+        clearInterval(interval);
+        time = 25 * 60;
+        document.getElementById("timer").innerText = "25:00";
+      }
+    </script>
+
+  </body>
+  </html>
   `);
-});
-
-// ================= START =================
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
 });
